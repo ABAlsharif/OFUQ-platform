@@ -1,0 +1,20 @@
+# Firebase
+.firebase/
+firebase-debug.log
+.firebaserc
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Node (if ever added)
+node_modules/

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>أفق — تسجيل الدخول</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+<div class="auth-page">
+  <div class="auth-card card">
+    <div class="auth-logo">
+      أفق
+      <div style="font-size:12px;font-weight:700;letter-spacing:3px;color:var(--primary);margin-top:-2px;opacity:0.85;">OFUQ</div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-login" onclick="switchTab('login')" data-i18n="auth.login_tab">تسجيل الدخول</button>
+      <button class="auth-tab" id="tab-register" onclick="switchTab('register')" data-i18n="auth.register_tab">إنشاء حساب</button>
+    </div>
+
+    <!-- Login Form -->
+    <div class="auth-form active" id="form-login">
+      <div class="form-group">
+        <label class="form-label" data-i18n="auth.email">البريد الإلكتروني</label>
+        <input type="email" id="login-email" class="form-input" placeholder="example@email.com" dir="ltr">
+      </div>
+      <div class="form-group">
+        <label class="form-label" data-i18n="auth.password">كلمة المرور</label>
+        <input type="password" id="login-pass" class="form-input" placeholder="••••••••" dir="ltr">
+      </div>
+      <div id="login-error" class="form-error"></div>
+      <button id="btn-login" class="btn btn-primary btn-full btn-lg mt-8" onclick="doLogin()" data-i18n="auth.login_btn">دخول ←</button>
+    </div>
+
+    <!-- Register Form -->
+    <div class="auth-form" id="form-register">
+      <div class="form-group">
+        <label class="form-label" data-i18n="auth.name">الاسم الكامل</label>
+        <input type="text" id="reg-name" class="form-input" data-i18n-ph="auth.name_ph" placeholder="محمد العلي">
+      </div>
+      <div class="form-group">
+        <label class="form-label" data-i18n="auth.email">البريد الإلكتروني</label>
+        <input type="email" id="reg-email" class="form-input" placeholder="example@email.com" dir="ltr">
+      </div>
+      <div class="form-group">
+        <label class="form-label" data-i18n="auth.password">كلمة المرور</label>
+        <input type="password" id="reg-pass" class="form-input" placeholder="••••••••" dir="ltr">
+      </div>
+      <div class="form-group">
+        <label class="form-label" data-i18n="auth.confirm">تأكيد كلمة المرور</label>
+        <input type="password" id="reg-pass2" class="form-input" placeholder="••••••••" dir="ltr">
+      </div>
+      <div id="reg-error" class="form-error"></div>
+      <button id="btn-register" class="btn btn-primary btn-full btn-lg mt-8" onclick="doRegister()" data-i18n="auth.register_btn">إنشاء الحساب 🚀</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<script src="js/app.js"></script>
+<script>
+  initSettings();
+
+  // Redirect already-signed-in users
+  _auth.onAuthStateChanged(async user => {
+    if (!user) return;
+    startCacheListeners(user.uid);
+    await CACHE_READY;
+    const profile = CACHE.users.find(u => u.id === user.uid);
+    if (profile) {
+      window.location.href = (profile.role === 'admin' || profile.role === 'professor') ? 'admin.html' : 'dashboard.html';
+    }
+  });
+
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('tab') === 'register') switchTab('register');
+
+  function switchTab(tab) {
+    document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+    document.getElementById('form-' + tab).classList.add('active');
+  }
+
+  function showError(id, msg) {
+    const el = document.getElementById(id);
+    el.textContent = msg; el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 3500);
+  }
+
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg; toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+  }
+
+  function setLoading(btnId, loading) {
+    const btn = document.getElementById(btnId);
+    if (btn) btn.disabled = loading;
+  }
+
+  async function doLogin() {
+    const email = document.getElementById('login-email').value.trim();
+    const pass  = document.getElementById('login-pass').value.trim();
+    if (!email || !pass) { showError('login-error', t('err.fill')); return; }
+    setLoading('btn-login', true);
+    try {
+      await _auth.signInWithEmailAndPassword(email, pass);
+      showToast(t('toast.welcome'));
+      // onAuthStateChanged above will handle redirect
+    } catch (err) {
+      const msg = (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential')
+        ? t('err.invalid_login') : err.message;
+      showError('login-error', msg);
+      setLoading('btn-login', false);
+    }
+  }
+
+  async function doRegister() {
+    const name  = document.getElementById('reg-name').value.trim();
+    const email = document.getElementById('reg-email').value.trim();
+    const pass  = document.getElementById('reg-pass').value.trim();
+    const pass2 = document.getElementById('reg-pass2').value.trim();
+    if (!name || !email || !pass) { showError('reg-error', t('err.fill')); return; }
+    if (pass !== pass2)           { showError('reg-error', t('err.pass_match')); return; }
+    if (pass.length < 6)          { showError('reg-error', t('err.pass_short')); return; }
+    setLoading('btn-register', true);
+    try {
+      // Check invitation (professor invite)
+      const invSnap = await _fs.collection('invitations').where('email','==',email).get();
+      const inv = invSnap.empty ? null : invSnap.docs[0].data();
+      const role = inv ? inv.role : 'user';
+      // Create Firebase Auth user
+      const cred = await _auth.createUserWithEmailAndPassword(email, pass);
+      const uid  = cred.user.uid;
+      // Write Firestore profile (groupId defaults to 'general', set when submitting idea)
+      const profile = { id: uid, name, email, role, groupId: 'general', createdAt: new Date().toISOString() };
+      await _fs.collection('users').doc(uid).set(profile);
+      if (inv) await _fs.collection('invitations').doc(invSnap.docs[0].id).delete();
+      showToast(t('toast.created'));
+    } catch (err) {
+      const msg = err.code === 'auth/email-already-in-use' ? t('err.email_used') : err.message;
+      showError('reg-error', msg);
+      setLoading('btn-register', false);
+    }
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      const activeForm = document.querySelector('.auth-form.active').id;
+      if (activeForm === 'form-login') doLogin(); else doRegister();
+    }
+  });
+</script>
+</body>
+</html>

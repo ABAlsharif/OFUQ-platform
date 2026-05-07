@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>أفق — انطلق نحو أفقك</title>
+  <meta name="description" content="منصة أفق — رحلتك المنظمة لتحويل فكرتك إلى مشروع حقيقي بإشراف مباشر من خبراء">
+  <link rel="stylesheet" href="css/styles.css">
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="js/app.js"></script>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+  <div class="navbar-logo">
+    أفق
+    <span style="font-size:11px;font-weight:600;letter-spacing:2px;color:var(--primary);display:block;margin-top:-4px;opacity:0.85;">OFUQ</span>
+  </div>
+  <div class="navbar-links">
+    <div class="settings-bar">
+      <button class="btn-settings" onclick="toggleTheme()"><span data-theme-icon>☀️</span></button>
+      <button class="btn-settings" onclick="toggleLang()" data-lang-btn>EN</button>
+    </div>
+    <a href="auth.html" class="btn btn-ghost" data-i18n="nav.login">تسجيل الدخول</a>
+    <a href="auth.html?tab=register" class="btn btn-primary" data-i18n="nav.start">ابدأ رحلتك ✨</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div>
+    <div class="section-tag">منصة إطلاق المشاريع #1</div>
+    <h1>حوّل <span>فكرتك</span> إلى<br>مشروع حقيقي</h1>
+    <p>رحلة منظمة من 4 مراحل مع إشراف مباشر من خبراء. لا تسير وحدك — نحن معك في كل خطوة.</p>
+    <div class="hero-btns">
+      <a href="auth.html?tab=register" class="btn btn-primary btn-lg">ابدأ مجاناً 🚀</a>
+      <a href="#how" class="btn btn-ghost btn-lg">كيف يعمل؟</a>
+    </div>
+  </div>
+</section>
+
+<!-- Stats -->
+<section style="padding:60px 48px;background:var(--bg-dark);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+  <div style="max-width:1000px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:40px;text-align:center;">
+    <div>
+      <div style="font-size:42px;font-weight:900;color:var(--primary);">+120</div>
+      <div style="font-size:14px;color:var(--text-secondary);margin-top:4px;font-weight:600;">مشروع مُطلَق</div>
+    </div>
+    <div>
+      <div style="font-size:42px;font-weight:900;color:var(--success);">98%</div>
+      <div style="font-size:14px;color:var(--text-secondary);margin-top:4px;font-weight:600;">معدل الرضا</div>
+    </div>
+    <div>
+      <div style="font-size:42px;font-weight:900;color:var(--warning);">850</div>
+      <div style="font-size:14px;color:var(--text-secondary);margin-top:4px;font-weight:600;">رائد أعمال</div>
+    </div>
+    <div>
+      <div style="font-size:42px;font-weight:900;color:var(--purple);">4.9 ⭐</div>
+      <div style="font-size:14px;color:var(--text-secondary);margin-top:4px;font-weight:600;">تقييم المنصة</div>
+    </div>
+  </div>
+</section>
+
+<!-- How it works -->
+<section id="how" style="padding:90px 48px;text-align:center;">
+  <div class="section-tag">كيف يعمل؟</div>
+  <div class="section-title">ثلاث خطوات للبدء</div>
+  <div class="section-subtitle">بسيط، سريع، ومنظم</div>
+  <div class="steps-grid" style="max-width:900px;margin:48px auto 0;">
+    <div class="step-card">
+      <div class="step-num">1</div>
+      <h3>سجّل حسابك</h3>
+      <p>أنشئ حسابك في دقيقة واحدة وقدّم فكرتك للمراجعة</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">2</div>
+      <h3>احصل على القبول</h3>
+      <p>يراجع خبراؤنا فكرتك ويرسلون لك تغذية راجعة مباشرة</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">3</div>
+      <h3>ابدأ رحلتك</h3>
+      <p>انطلق في 4 مراحل منظمة مع إشراف في كل مرحلة</p>
+    </div>
+  </div>
+</section>
+
+<!-- Stage Journey Preview -->
+<section style="padding:0 48px 90px;text-align:center;">
+  <div class="section-tag">رحلة المشروع</div>
+  <div class="section-title">4 مراحل نحو الإطلاق</div>
+  <div class="section-subtitle">كل مرحلة تفتح بعد موافقة المشرف على إنجازك</div>
+  <div class="stages-preview" style="max-width:1000px;margin:48px auto 0;">
+    <div class="stage-prev-item">
+      <span class="sp-icon">💡</span>
+      <div class="sp-num">المرحلة 1</div>
+      <h4>الفكرة والتخطيط</h4>
+      <p>البحث والتحليل ونموذج العمل</p>
+    </div>
+    <div class="stage-prev-item">
+      <span class="sp-icon">🏗️</span>
+      <div class="sp-num">المرحلة 2</div>
+      <h4>البنية والتأسيس</h4>
+      <p>قاعدة البيانات، الفريق، والخطة المالية</p>
+    </div>
+    <div class="stage-prev-item">
+      <span class="sp-icon">🎨</span>
+      <div class="sp-num">المرحلة 3</div>
+      <h4>التصميم والتطوير</h4>
+      <p>الواجهات والنموذج الأولي</p>
+    </div>
+    <div class="stage-prev-item">
+      <span class="sp-icon">🚀</span>
+      <div class="sp-num">المرحلة 4</div>
+      <h4>الإطلاق</h4>
+      <p>التسويق والإطلاق الرسمي</p>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section style="padding:80px 48px;text-align:center;background:var(--bg-dark);border-top:1px solid var(--border);">
+  <div class="section-title">هل أنت مستعد؟</div>
+  <p style="font-size:18px;margin:16px 0 36px;">انضم اليوم وابدأ رحلتك نحو أفقك الجديد</p>
+  <a href="auth.html?tab=register" class="btn btn-primary btn-lg">سجّل الآن مجاناً ✨</a>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="navbar-logo">
+    أفق
+    <span style="font-size:11px;font-weight:600;letter-spacing:2px;color:var(--primary);display:block;margin-top:-4px;opacity:0.85;">OFUQ</span>
+  </div>
+  <div class="footer-links">
+    <a href="#">الخصوصية</a>
+    <a href="#">الشروط</a>
+    <a href="#">تواصل معنا</a>
+  </div>
+  <div style="font-size:13px;color:var(--text-muted);">© 2026 أفق — جميع الحقوق محفوظة</div>
+</footer>
+
+<script>DB.init(); initSettings();</script>
+</body>
+</html>

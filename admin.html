@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>أفق — لوحة المشرف</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo" id="admin-logo">
+      أفق <span style="font-size:10px;background:var(--primary);color:#fff;padding:2px 8px;border-radius:99px;vertical-align:middle;font-weight:700;" id="role-badge">ADMIN</span>
+      <div style="font-size:10px;font-weight:700;letter-spacing:2.5px;color:var(--primary);margin-top:-2px;opacity:0.85;">OFUQ</div>
+    </div>
+    <nav style="display:flex;flex-direction:column;gap:6px;flex:1;" id="admin-nav"></nav>
+    <div class="sidebar-user">
+      <div class="avatar">م</div>
+      <div>
+        <div class="user-name" id="admin-name-display">مدير المنصة</div>
+        <div class="user-role" id="admin-role-display">Admin</div>
+      </div>
+      <button onclick="DB.logout()" class="btn btn-ghost btn-icon" style="margin-right:auto;" title="خروج">↩</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main-content" style="padding:0;">
+    <!-- Top Header Bar -->
+    <div class="app-header">
+      <button class="btn-settings" onclick="toggleTheme()"><span data-theme-icon>☀️</span></button>
+      <button class="btn-settings" onclick="toggleLang()" data-lang-btn>EN</button>
+    </div>
+
+    <div style="padding:36px 40px;">
+
+      <!-- OVERVIEW -->
+      <section class="section active" id="sec-overview">
+        <div class="page-header">
+          <h1 data-i18n="admin.overview.title">نظرة عامة على المنصة 📊</h1>
+          <p data-i18n="admin.overview.sub">إحصائيات وآخر نشاطات المستخدمين</p>
+        </div>
+        <div class="stats-grid" id="admin-stats"></div>
+        <div id="recent-activity"></div>
+      </section>
+
+      <!-- PROFESSORS (super admin only) -->
+      <section class="section" id="sec-professors">
+        <div class="page-header">
+          <h1>الأساتذة 🎓</h1>
+          <p>إدارة حسابات الأساتذة</p>
+        </div>
+        <div id="professors-list"></div>
+      </section>
+
+      <!-- ALL GROUPS (super admin only) -->
+      <section class="section" id="sec-all-groups">
+        <div class="page-header">
+          <h1>جميع المجموعات 📁</h1>
+          <p>كل المجموعات عبر جميع الأساتذة</p>
+        </div>
+        <div id="all-groups-list"></div>
+      </section>
+
+      <!-- MY GROUPS (professor only) -->
+      <section class="section" id="sec-my-groups">
+        <div class="page-header">
+          <h1>مجموعاتي 📂</h1>
+          <p>أنشئ مجموعة وشارك كودها مع طلابك</p>
+        </div>
+        <div id="my-groups-list"></div>
+      </section>
+
+      <!-- GENERAL STUDENTS (super admin only) -->
+      <section class="section" id="sec-general">
+        <div class="page-header">
+          <h1>الطلاب غير المعيّنين 📋</h1>
+          <p>طلاب سجلوا دون كود مجموعة — عيّنهم لأستاذ</p>
+        </div>
+        <div id="general-list"></div>
+      </section>
+
+      <!-- PENDING IDEAS -->
+      <section class="section" id="sec-pending">
+        <div class="page-header">
+          <h1 data-i18n="admin.pending.title">الأفكار المعلقة 🟡</h1>
+          <p data-i18n="admin.pending.sub">راجع الأفكار المقدمة واتخذ قرارك</p>
+        </div>
+        <div id="pending-list"></div>
+      </section>
+
+      <!-- ACTIVE PROJECTS -->
+      <section class="section" id="sec-active">
+        <div class="page-header">
+          <h1 data-i18n="admin.active.title">المشاريع النشطة 🚀</h1>
+          <p data-i18n="admin.active.sub">تابع تقدم المشاريع وراجع طلبات إتمام المراحل</p>
+        </div>
+        <div id="active-list"></div>
+      </section>
+
+      <!-- COMPLETED -->
+      <section class="section" id="sec-completed">
+        <div class="page-header">
+          <h1 data-i18n="admin.completed.title">المشاريع المكتملة 🏆</h1>
+          <p data-i18n="admin.completed.sub">المشاريع التي أنجز أصحابها جميع المراحل</p>
+        </div>
+        <div id="completed-list"></div>
+      </section>
+
+      <!-- USERS -->
+      <section class="section" id="sec-users">
+        <div class="page-header">
+          <h1 data-i18n="admin.users.title">المستخدمون 👥</h1>
+          <p data-i18n="admin.users.sub">قائمة بجميع رواد الأعمال المسجلين</p>
+        </div>
+        <div id="users-list"></div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<!-- Admin Feedback Modal -->
+<div class="modal-overlay" id="admin-modal">
+  <div class="modal" style="max-width:500px;">
+    <div class="modal-header">
+      <h2 class="modal-title" id="admin-modal-title">إجراء</h2>
+      <button class="modal-close" onclick="closeAdminModal()">✕</button>
+    </div>
+    <p style="margin-bottom:16px;" id="admin-modal-desc"></p>
+    <!-- Extra dynamic field (e.g. professor selector for group creation) -->
+    <div class="form-group" id="admin-modal-extra" style="display:none;"></div>
+    <div class="form-group">
+      <label class="form-label" data-i18n="modal.note">رسالتك للمستخدم <span data-i18n="modal.note_opt" style="color:var(--text-muted);font-weight:400;">(اختياري)</span></label>
+      <textarea id="admin-note" class="form-textarea" rows="4" data-i18n-ph="modal.note_ph" placeholder="اكتب ملاحظاتك أو سبب القرار..."></textarea>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn btn-full" id="admin-confirm-btn" onclick="confirmAdminAction()" data-i18n="btn.confirm">تأكيد</button>
+      <button class="btn btn-ghost btn-full" onclick="closeAdminModal()" data-i18n="btn.cancel">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<script src="js/app.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>

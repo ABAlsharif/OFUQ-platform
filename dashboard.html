@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>أفق — لوحة المستخدم</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      أفق
+      <div style="font-size:10px;font-weight:700;letter-spacing:2.5px;color:var(--primary);margin-top:-2px;opacity:0.85;">OFUQ</div>
+    </div>
+    <nav style="display:flex;flex-direction:column;gap:6px;flex:1;">
+      <button class="sidebar-link active" onclick="showSection('home')" id="link-home">
+        <span class="s-icon">🏠</span> <span data-i18n="dash.home">الرئيسية</span>
+      </button>
+      <button class="sidebar-link" onclick="showSection('idea')" id="link-idea">
+        <span class="s-icon">💡</span> <span data-i18n="dash.idea">تقديم الفكرة</span>
+      </button>
+      <button class="sidebar-link" onclick="showSection('track')" id="link-track">
+        <span class="s-icon">📈</span> <span data-i18n="dash.track">متابعة المشروع</span>
+      </button>
+    </nav>
+    <div class="sidebar-user">
+      <div class="avatar" id="user-avatar">م</div>
+      <div>
+        <div class="user-name" id="user-name-display">...</div>
+        <div class="user-role" data-i18n="dash.role">رائد أعمال</div>
+      </div>
+      <button onclick="DB.logout()" class="btn btn-ghost btn-icon" style="margin-right:auto;" title="خروج">↩</button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content" style="padding:0;">
+    <!-- Top Header Bar -->
+    <div class="app-header">
+      <button class="btn-settings" onclick="toggleTheme()"><span data-theme-icon>☀️</span></button>
+      <button class="btn-settings" onclick="toggleLang()" data-lang-btn>EN</button>
+    </div>
+
+    <div style="padding:36px 40px;">
+
+      <!-- HOME -->
+      <section class="section active" id="sec-home">
+        <div class="page-header">
+          <h1 id="welcome-msg">أهلاً بك 👋</h1>
+          <p data-i18n="home.subtitle">إليك نظرة سريعة على حالة مشروعك</p>
+        </div>
+        <div class="stats-grid" id="home-stats">
+          <div class="stat-card">
+            <div><div class="stat-value text-blue" id="stat-stage">—</div><div class="stat-label" data-i18n="home.stat1">مرحلتك الحالية</div></div>
+            <div class="stat-icon">📍</div>
+          </div>
+          <div class="stat-card">
+            <div><div class="stat-value text-green" id="stat-done">0</div><div class="stat-label" data-i18n="home.stat2">مراحل مكتملة</div></div>
+            <div class="stat-icon">✅</div>
+          </div>
+          <div class="stat-card">
+            <div><div class="stat-value text-yellow" id="stat-status-val">—</div><div class="stat-label" data-i18n="home.stat3">حالة الطلب</div></div>
+            <div class="stat-icon">🔔</div>
+          </div>
+        </div>
+        <div id="home-project-area"></div>
+      </section>
+
+      <!-- SUBMIT IDEA -->
+      <section class="section" id="sec-idea">
+        <div class="page-header">
+          <h1 data-i18n="idea.title">تقديم فكرة مشروع 💡</h1>
+          <p data-i18n="idea.subtitle">أخبرنا عن فكرتك وسيراجعها المشرف في أقرب وقت</p>
+        </div>
+        <div id="idea-content"></div>
+      </section>
+
+      <!-- TRACK -->
+      <section class="section" id="sec-track">
+        <div class="page-header">
+          <h1 data-i18n="track.title">متابعة مشروعك 📈</h1>
+          <p id="track-project-name">...</p>
+        </div>
+        <div id="track-content"></div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<!-- Stage Completion Modal -->
+<div class="modal-overlay" id="completion-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title" id="modal-stage-title">إتمام المرحلة</h2>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <p style="margin-bottom:20px;" data-i18n="modal.desc">اختر ما أنجزته في هذه المرحلة:</p>
+    <div class="checklist" id="modal-checklist"></div>
+    <div class="form-group">
+      <label class="form-label" data-i18n="modal.summary">ملخص قصير عما أنجزته</label>
+      <textarea class="form-textarea" id="modal-summary" data-i18n-ph="modal.summary_ph" placeholder="اكتب هنا ملخصاً سريعاً..."></textarea>
+    </div>
+    <div class="form-group" id="proof-link-row">
+      <label class="form-label">🔗 رابط إثبات عملك (GitHub / Figma / Drive...)</label>
+      <input type="url" id="modal-proof-link" class="form-input" placeholder="https://" dir="ltr">
+    </div>
+    <div id="modal-error" class="form-error"></div>
+    <button class="btn btn-primary btn-full btn-lg" onclick="submitCompletion()" data-i18n="btn.send">إرسال للمشرف ✅</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+<script src="js/app.js"></script>
+<script src="js/dashboard.js"></script>
+</body>
+</html>
