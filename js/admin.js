@@ -160,25 +160,79 @@ function renderAllGroups(groups, allUsers) {
   const el = document.getElementById('all-groups-list');
   if (!el) return;
   const professors = allUsers.filter(u => u.role === 'professor');
+  const allProjects = DB.getProjects();
+
   const createBtn = `
-    <div style="margin-bottom:20px;display:flex;gap:10px;">
+    <div style="margin-bottom:20px;">
       <button class="btn btn-primary" onclick="openSuperAdminGroupModal()">+ إنشاء مجموعة جديدة</button>
     </div>`;
-  el.innerHTML = createBtn + (!groups.length ? `<div class="empty-state"><span class="empty-icon">📁</span><h3>لا توجد مجموعات بعد</h3></div>` :
-    groups.map(g => {
+
+  if (!groups.length) {
+    el.innerHTML = createBtn + `<div class="empty-state"><span class="empty-icon">📁</span><h3>لا توجد مجموعات بعد</h3></div>`;
+    return;
+  }
+
+  const groupOpts = (excludeId) => [
+    `<option value="general">📋 المجموعة العامة (غير معيّن)</option>`,
+    ...groups.filter(g => g.id !== excludeId).map(g => {
       const prof = professors.find(p => p.id === g.professorId);
-      const members = allUsers.filter(u => u.groupId === g.id);
-      return `<div class="request-card">
-        <div class="flex justify-between items-center">
-          <div><h3 style="font-size:17px;margin-bottom:4px;">${g.name}</h3>
+      return `<option value="${g.id}">📁 ${g.name} ${prof ? '— '+prof.name : ''} (${g.code})</option>`;
+    })
+  ].join('');
+
+  el.innerHTML = createBtn + groups.map(g => {
+    const prof = professors.find(p => p.id === g.professorId);
+    const members = allUsers.filter(u => u.groupId === g.id && u.role === 'user');
+
+    const membersHtml = members.length ? members.map(u => {
+      const proj = allProjects.find(p => p.userId === u.id);
+      const statusMap = { pending:'⏳ قيد المراجعة', accepted:'🚀 نشط', rejected:'❌ مرفوض', completed:'🏆 مكتمل' };
+      return `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--bg-dark);border-radius:var(--radius-sm);border:1px solid var(--border);margin-bottom:8px;flex-wrap:wrap;gap:10px;">
+          <div>
+            <div style="font-size:14px;font-weight:700;">${u.name}</div>
+            <div style="font-size:12px;color:var(--text-muted);" dir="ltr">${u.email}</div>
+            ${proj
+              ? `<span style="font-size:12px;color:var(--text-secondary);">📋 ${proj.projectName} — ${statusMap[proj.status]||''}</span>`
+              : `<span style="font-size:12px;color:var(--text-muted);">لا يوجد مشروع</span>`}
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <select id="transfer-${u.id}" class="form-select" style="min-width:200px;font-size:13px;">
+              <option value="">نقل إلى مجموعة أخرى...</option>
+              ${groupOpts(g.id)}
+            </select>
+            <button class="btn btn-sm" style="background:var(--warning);color:#000;white-space:nowrap;" onclick="doTransfer('${u.id}')">نقل ←</button>
+          </div>
+        </div>`;
+    }).join('') : `<div style="font-size:13px;color:var(--text-muted);padding:10px 0;text-align:center;">لا يوجد طلاب في هذه المجموعة بعد</div>`;
+
+    return `
+      <div class="request-card" style="margin-bottom:16px;">
+        <div class="flex justify-between items-center" style="margin-bottom:14px;">
+          <div>
+            <h3 style="font-size:18px;margin-bottom:4px;">📁 ${g.name}</h3>
             <span style="font-size:13px;color:var(--text-muted);">الأستاذ: <strong>${prof ? prof.name : '— غير محدد'}</strong></span>
           </div>
-          <span class="badge badge-success" style="font-family:monospace;letter-spacing:2px;">🔑 ${g.code}</span>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <span style="font-size:13px;color:var(--text-muted);">👤 ${members.length} طالب</span>
+            <span class="badge badge-success" style="font-family:monospace;letter-spacing:2px;font-size:14px;">🔑 ${g.code}</span>
+          </div>
         </div>
-        <div style="margin-top:8px;font-size:13px;color:var(--text-secondary);">👤 ${members.length} طالب</div>
+        <div style="border-top:1px solid var(--border);padding-top:12px;">
+          ${membersHtml}
+        </div>
       </div>`;
-    }).join(''));
+  }).join('');
 }
+
+function doTransfer(userId) {
+  const sel = document.getElementById('transfer-' + userId);
+  if (!sel || !sel.value) { showToast('اختر مجموعة للنقل إليها أولاً', 'danger'); return; }
+  DB.assignStudentToGroup(userId, sel.value);
+  showToast('✅ تم نقل الطالب بنجاح', 'success');
+  loadAdmin();
+}
+
 
 function renderGeneralStudents(generals, professors) {
   const el = document.getElementById('general-list');
