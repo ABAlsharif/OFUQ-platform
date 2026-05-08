@@ -132,6 +132,29 @@ const DB = {
     const sn=['الهيكل والتخطيط','قاعدة البيانات','تصميم الواجهات','الإطلاق'];
     const msg = approved ? `✅ تمت الموافقة على المرحلة ${stageNum}: ${sn[stageNum-1]}.${stageNum<4?' يمكنك الانتقال للتالية.':' 🎉 أكملت جميع المراحل!'} ${adminNote?'— '+adminNote:''}` : `❌ تم رفض المرحلة ${stageNum}: ${sn[stageNum-1]}.${adminNote?' — '+adminNote:''}`;
     this.addNotification(proj.userId, approved?'success':'danger', msg);
+  },
+
+  // Creates a professor account WITHOUT signing out the current admin
+  // Uses a secondary Firebase App instance so auth state is isolated
+  async createProfessor(name, email, password) {
+    const secondaryApp = firebase.initializeApp(firebaseConfig, 'prof-create-' + Date.now());
+    const secondaryAuth = secondaryApp.auth();
+    try {
+      const cred = await secondaryAuth.createUserWithEmailAndPassword(email, password);
+      const uid  = cred.user.uid;
+      await _fs.collection('users').doc(uid).set({
+        id: uid, name, email, role: 'professor', groupId: 'professor',
+        createdAt: new Date().toISOString()
+      });
+      await secondaryAuth.signOut();
+      await secondaryApp.delete();
+      return { uid };
+    } catch (err) {
+      try { await secondaryApp.delete(); } catch(e) {}
+      return { error: err.code === 'auth/email-already-in-use'
+        ? 'هذا البريد مستخدم بالفعل'
+        : err.message };
+    }
   }
 };
 

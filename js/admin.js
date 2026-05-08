@@ -431,13 +431,28 @@ function confirmAdminAction() {
 
 function openCreateProfessorModal() {
   document.getElementById('admin-modal-title').textContent = '🎓 إضافة أستاذ جديد';
-  document.getElementById('admin-modal-desc').textContent  = '';
-  document.getElementById('admin-note').value = '';
-  document.getElementById('admin-modal').classList.add('open');
+  document.getElementById('admin-modal-desc').textContent  = 'أدخل بيانات الأستاذ وسيتمكن من تسجيل الدخول بها مباشرة.';
+  // Hide the generic note field, use extra fields instead
+  document.getElementById('admin-note').value = 'SKIP';
+  document.getElementById('admin-note').parentElement.style.display = 'none';
+  const extraEl = document.getElementById('admin-modal-extra');
+  extraEl.style.display = '';
+  extraEl.innerHTML = `
+    <div class="form-group">
+      <label class="form-label">اسم الأستاذ</label>
+      <input type="text" id="prof-name" class="form-input" placeholder="د.أحمد العلي">
+    </div>
+    <div class="form-group">
+      <label class="form-label">البريد الإلكتروني</label>
+      <input type="email" id="prof-email" class="form-input" placeholder="ahmed@uni.edu" dir="ltr">
+    </div>
+    <div class="form-group">
+      <label class="form-label">كلمة المرور <span style="color:var(--text-muted);font-size:12px;">(يشاركها الأستاذ لاحقاً)</span></label>
+      <input type="text" id="prof-pass" class="form-input" placeholder="مثال: Pass@2025" dir="ltr">
+    </div>`;
   document.getElementById('admin-confirm-btn').textContent = 'إنشاء الحساب';
   document.getElementById('admin-confirm-btn').className = 'btn btn-success btn-full';
-  // Reuse note field for JSON input — show extra fields
-  document.getElementById('admin-note').placeholder = 'الاسم | البريد الإلكتروني | كلمة المرور\nمثال: د.أحمد | ahmed@uni.com | pass123';
+  document.getElementById('admin-modal').classList.add('open');
   adminAction = { type: 'create-professor' };
 }
 
@@ -457,13 +472,21 @@ const _origConfirm = confirmAdminAction;
 window.confirmAdminAction = async function() {
   if (!adminAction) return;
   if (adminAction.type === 'create-professor') {
-    const raw = document.getElementById('admin-note').value.trim();
-    const parts = raw.split('|').map(s => s.trim());
-    if (parts.length < 3 || !parts[0] || !parts[1] || !parts[2]) { showToast('يرجى إدخال: الاسم | البريد | كلمة المرور', 'danger'); return; }
-    const res = await DB.createProfessor(parts[0], parts[1], parts[2]);
-    if (res && res.error) { showToast(res.error, 'danger'); return; }
-    showToast('✅ تم إنشاء حساب الأستاذ بنجاح', 'success');
-    closeAdminModal(); loadAdmin(); return;
+    const name  = (document.getElementById('prof-name')?.value  || '').trim();
+    const email = (document.getElementById('prof-email')?.value || '').trim();
+    const pass  = (document.getElementById('prof-pass')?.value  || '').trim();
+    if (!name || !email || !pass) { showToast('يرجى تعبئة جميع حقول الأستاذ', 'danger'); return; }
+    if (pass.length < 6) { showToast('كلمة المرور يجب أن تكون 6 أحرف على الأقل', 'danger'); return; }
+    document.getElementById('admin-confirm-btn').disabled = true;
+    document.getElementById('admin-confirm-btn').textContent = '...جاري الإنشاء';
+    const res = await DB.createProfessor(name, email, pass);
+    document.getElementById('admin-confirm-btn').disabled = false;
+    if (res && res.error) { showToast(res.error, 'danger'); document.getElementById('admin-confirm-btn').textContent = 'إنشاء الحساب'; return; }
+    showToast(`✅ تم إنشاء حساب أستاذ: ${name}`, 'success');
+    closeAdminModal();
+    // Restore hidden note field
+    document.getElementById('admin-note').parentElement.style.display = '';
+    loadAdmin(); return;
   }
   if (adminAction.type === 'create-group') {
     // Professor creating their own group
