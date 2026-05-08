@@ -83,16 +83,8 @@ const DB = {
     const proj = CACHE.projects.find(p => p.userId === userId);
     if (proj) _fs.collection('projects').doc(proj.id).update({ groupId });
   },
-  async createProfessor(name, email, password) {
-    const existing = CACHE.users.find(u => u.email === email);
-    if (existing) {
-      await _fs.collection('users').doc(existing.id).update({ role:'professor' });
-      return { user: existing };
-    }
-    const inv = { id:'inv-'+Date.now(), email, name, role:'professor', createdAt:new Date().toISOString() };
-    await _fs.collection('invitations').doc(inv.id).set(inv);
-    return { invitation: inv };
   },
+
 
   // ── PROJECTS ──────────────────────────────────────────────────────────
   getUserProject(uid) { return CACHE.projects.find(p => p.userId === uid) || null; },

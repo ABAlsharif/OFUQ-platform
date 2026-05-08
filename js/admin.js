@@ -415,6 +415,9 @@ function closeAdminModal() {
   document.getElementById('admin-modal').classList.remove('open');
   document.getElementById('admin-modal-extra').style.display = 'none';
   document.getElementById('admin-modal-extra').innerHTML = '';
+  // Always restore the note field in case it was hidden by professor modal
+  const noteParent = document.getElementById('admin-note')?.parentElement;
+  if (noteParent) noteParent.style.display = '';
   adminAction = null;
 }
 
@@ -479,14 +482,16 @@ window.confirmAdminAction = async function() {
     if (pass.length < 6) { showToast('كلمة المرور يجب أن تكون 6 أحرف على الأقل', 'danger'); return; }
     document.getElementById('admin-confirm-btn').disabled = true;
     document.getElementById('admin-confirm-btn').textContent = '...جاري الإنشاء';
-    const res = await DB.createProfessor(name, email, pass);
+    try {
+      const res = await DB.createProfessor(name, email, pass);
+      if (res && res.error) { showToast(res.error, 'danger'); }
+      else { showToast(`✅ تم إنشاء حساب أستاذ: ${name}`, 'success'); closeAdminModal(); loadAdmin(); }
+    } catch(e) {
+      showToast('خطأ: ' + e.message, 'danger');
+    }
     document.getElementById('admin-confirm-btn').disabled = false;
-    if (res && res.error) { showToast(res.error, 'danger'); document.getElementById('admin-confirm-btn').textContent = 'إنشاء الحساب'; return; }
-    showToast(`✅ تم إنشاء حساب أستاذ: ${name}`, 'success');
-    closeAdminModal();
-    // Restore hidden note field
-    document.getElementById('admin-note').parentElement.style.display = '';
-    loadAdmin(); return;
+    document.getElementById('admin-confirm-btn').textContent = 'إنشاء الحساب';
+    return;
   }
   if (adminAction.type === 'create-group') {
     // Professor creating their own group
