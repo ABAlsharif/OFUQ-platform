@@ -83,8 +83,6 @@ const DB = {
     const proj = CACHE.projects.find(p => p.userId === userId);
     if (proj) _fs.collection('projects').doc(proj.id).update({ groupId });
   },
-  },
-
 
   // ── PROJECTS ──────────────────────────────────────────────────────────
   getUserProject(uid) { return CACHE.projects.find(p => p.userId === uid) || null; },
