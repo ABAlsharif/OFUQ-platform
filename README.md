@@ -95,12 +95,12 @@ On every mentor decision, a **notification** is pushed to the user and appears i
 
 | Layer | Technology |
 |-------|------------|
-| **Frontend** | HTML5 + CSS3 + Vanilla JavaScript — no framework, no build step |
+| **Frontend** | HTML5 + CSS3 + Vanilla JavaScript , no framework, no build step |
 | **Auth** | Firebase Authentication (Email / Password) |
 | **Database** | Cloud Firestore (real-time) |
 | **Sync** | `onSnapshot` listeners → local CACHE → synchronous reads |
 | **Font** | Tajawal (Google Fonts) |
-| **Languages** | Arabic (default · RTL) / English (LTR) — built-in i18n system |
+| **Languages** | Arabic (default · RTL) / English (LTR) , built-in i18n system |
 | **Theme** | Dark / Light — persisted in `localStorage` |
 
 The project is **fully static** — just drop it on any static host (GitHub Pages / Firebase Hosting / Netlify); no server required.
