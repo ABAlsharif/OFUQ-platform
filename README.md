@@ -217,7 +217,7 @@ Register a normal account from `auth.html`, then manually change that user's `ro
 
 ## 👤 Author
 
-**Abubakr Alsharif** · [GitHub @ABAlsharif](https://github.com/ABAlsharif)
+**Abubakr Elsherif** · [GitHub @ABAlsharif](https://github.com/ABAlsharif)
 
 <div align="center">
 
