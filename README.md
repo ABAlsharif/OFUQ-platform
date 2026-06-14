@@ -4,7 +4,7 @@
 
 ### Turn your idea into a real project
 
-A project-incubation platform that guides entrepreneurs from raw idea to launch through a structured, four-stage journey — with a mentor reviewing every step.
+A project-incubation platform that guides entrepreneurs from raw idea to launch through a structured, four-stage journey  with a mentor reviewing every step.
 
 <br>
 
